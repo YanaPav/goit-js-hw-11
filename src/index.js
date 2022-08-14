@@ -2,6 +2,7 @@ import SimpleLightbox from "simplelightbox"
 import "simplelightbox/dist/simple-lightbox.min.css"
 import GalleryApi from "./gallery-api"
 import Notiflix from 'notiflix'
+import InfiniteScroll from "infinite-scroll"
 
 const form = document.querySelector('#search-form')
 const galleryEl = document.querySelector('.gallery')
@@ -16,17 +17,24 @@ loadMoreBtn.addEventListener('click', onLoadMoreBtn)
 
 async function onFormSubmit(e) {
     e.preventDefault()
-    clearMarkup()
-    galleryApi.resetPage()
-
     const searchQuery = e.currentTarget.elements.searchQuery.value.trim()
 
     if (!searchQuery) {
-        console.log('Type something')
+        clearMarkup()
+        Notiflix.Notify.failure('Type something')
         hideLoadMoreBtn()
         return
+    }   
+
+    if (searchQuery === galleryApi.searchQuery) {
+        Notiflix.Notify.info(`Hmm... ${searchQuery} images are already on the screen`)
+        return
     }
-    console.log(searchQuery)
+
+    clearMarkup()
+    galleryApi.resetPage()
+     
+
     galleryApi.searchQuery = searchQuery
 
     try {
@@ -40,7 +48,13 @@ async function onFormSubmit(e) {
         galleryApi.incrementPage()
         Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`)
         makeMarkup(images)
+
+        if (images.totalHits > 40) {
+            showLoadMoreBtn()
+        }
+        
         const lightbox = new SimpleLightbox('.gallery a')
+        // lightbox.refresh()
 
     }
 
@@ -56,17 +70,23 @@ async function onFormSubmit(e) {
 }
 
 async function onLoadMoreBtn() {
-    hideLoadMoreBtn()
     const images = await galleryApi.fetchImages()
     makeMarkup(images)
     lightbox.refresh()
     galleryApi.incrementPage()
+    const pageNumbers = Math.round(images.totalHits / 40)
+    
+    if (galleryApi.page > pageNumbers) {
+        hideLoadMoreBtn()
+        Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.")
+
+    }
 }
 // висота карточок
 
 function makeMarkup(galleryInfo) {
     const markup = galleryInfo.hits.reduce((allMarkup, image) =>
-    {return allMarkup + `<a href=${image.largeImageURL}>
+    {return allMarkup + `<a href=${image.largeImageURL} class="post">
             <div class="photo-card">
                 <img src=${image.webformatURL} alt=${image.tags} loading="lazy" />
                 <div class="info">
@@ -74,11 +94,11 @@ function makeMarkup(galleryInfo) {
                     <b>Likes:</b>${image.likes}
                     </p>
                     <p class="info-item">
-                    <b>Views:</b>${image.views}
-                    </p>
-                    <p class="info-item">
                     <b>Comments:</b>${image.comments}
                     </p>
+                    <p class="info-item">
+                    <b>Views:</b>${image.views}
+                    </p>                    
                     <p class="info-item">
                     <b>Downloads:</b>${image.downloads}
                     </p>
@@ -86,8 +106,15 @@ function makeMarkup(galleryInfo) {
             </div>
         </a>`}
         , '')
+    
     galleryEl.insertAdjacentHTML('beforeend', markup)
-    loadMoreBtn.classList.remove('is-hidden')
+    slowScroll()
+
+    const infScroll = new InfiniteScroll('.container', {
+        path: '.load-more',
+        append: undefined
+    })
+    // showLoadMoreBtn()
 }
 
 function clearMarkup() {
@@ -98,3 +125,32 @@ function hideLoadMoreBtn() {
     loadMoreBtn.classList.add('is-hidden')
 }
 
+function showLoadMoreBtn() {
+    loadMoreBtn.classList.remove('is-hidden')
+}
+
+function slowScroll() {
+    const { height: cardHeight } = document
+        .querySelector(".gallery")
+        .firstElementChild.getBoundingClientRect();
+
+    window.scrollBy({
+        top: cardHeight * 2,
+        behavior: "smooth",
+    });
+}
+
+
+// Нескінченний скрол
+
+// const options = {
+//     // root: null,
+//     root: document.querySelector('.gallery'),
+//     rootMargin: '0px',
+//     threshold: 1.0
+// }
+
+// const observer = new IntersectionObserver(showLoadMoreBtn, options)
+
+// const target = document.querySelector('.gallery');
+// observer.observe(target);
