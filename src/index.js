@@ -48,10 +48,13 @@ async function onFormSubmit(e) {
         Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`)
         makeMarkup(images, galleryEl)
 
-        if (images.totalHits > 40) {
-            showLoadMoreBtn()
+        showLoadMoreBtn()
+
+        if (images.totalHits <= 40) {
+            hideLoadMoreBtn()
         }
-        
+
+                
         const lightbox = new SimpleLightbox('.gallery a')
         // lightbox.refresh()
 
