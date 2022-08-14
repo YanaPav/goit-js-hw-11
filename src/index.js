@@ -2,7 +2,7 @@ import SimpleLightbox from "simplelightbox"
 import "simplelightbox/dist/simple-lightbox.min.css"
 import GalleryApi from "./gallery-api"
 import Notiflix from 'notiflix'
-import InfiniteScroll from "infinite-scroll"
+import makeMarkup from "./make-markup"
 
 const form = document.querySelector('#search-form')
 const galleryEl = document.querySelector('.gallery')
@@ -39,7 +39,6 @@ async function onFormSubmit(e) {
 
     try {
         const images = await galleryApi.fetchImages()
-        console.log(images)
 
         if (images.totalHits === 0) {
             throw new Error('no images')
@@ -47,7 +46,7 @@ async function onFormSubmit(e) {
 
         galleryApi.incrementPage()
         Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`)
-        makeMarkup(images)
+        makeMarkup(images, galleryEl)
 
         if (images.totalHits > 40) {
             showLoadMoreBtn()
@@ -72,7 +71,8 @@ async function onFormSubmit(e) {
 
 async function onLoadMoreBtn() {
     const images = await galleryApi.fetchImages()
-    makeMarkup(images)
+    makeMarkup(images, galleryEl)
+    slowScroll()
     lightbox.refresh()
     galleryApi.incrementPage()
     const pageNumbers = Math.round(images.totalHits / 40)
@@ -83,36 +83,7 @@ async function onLoadMoreBtn() {
 
     }
 }
-// висота карточок
 
-function makeMarkup(galleryInfo) {
-    const markup = galleryInfo.hits.reduce((allMarkup, image) =>
-    {return allMarkup + `<a href=${image.largeImageURL} class="post">
-            <div class="photo-card">
-                <img src=${image.webformatURL} alt=${image.tags} loading="lazy" />
-                <div class="info">
-                    <p class="info-item">
-                    <b>Likes:</b>${image.likes}
-                    </p>
-                    <p class="info-item">
-                    <b>Comments:</b>${image.comments}
-                    </p>
-                    <p class="info-item">
-                    <b>Views:</b>${image.views}
-                    </p>                    
-                    <p class="info-item">
-                    <b>Downloads:</b>${image.downloads}
-                    </p>
-                </div>
-            </div>
-        </a>`}
-        , '')
-    
-    galleryEl.insertAdjacentHTML('beforeend', markup)
-    slowScroll()
-
-        // showLoadMoreBtn()
-}
 
 function clearMarkup() {
     galleryEl.innerHTML = ""
