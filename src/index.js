@@ -111,11 +111,7 @@ function makeMarkup(galleryInfo) {
     galleryEl.insertAdjacentHTML('beforeend', markup)
     slowScroll()
 
-    const infScroll = new InfiniteScroll('.container', {
-        path: '.load-more',
-        append: undefined
-    })
-    // showLoadMoreBtn()
+        // showLoadMoreBtn()
 }
 
 function clearMarkup() {
