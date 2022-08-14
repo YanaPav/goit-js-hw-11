@@ -63,6 +63,7 @@ async function onFormSubmit(e) {
 
         if (error.toString().includes('no images')) {
             Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.')
+            form.reset()
             return
         }
         console.log(error)
