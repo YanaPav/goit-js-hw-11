@@ -47,6 +47,7 @@ async function onFormSubmit(e) {
         galleryApi.incrementPage()
         Notiflix.Notify.success(`Hooray! We found ${images.totalHits} images.`)
         makeMarkup(images, galleryEl)
+        lightbox.refresh()
 
         showLoadMoreBtn()
 
@@ -54,9 +55,7 @@ async function onFormSubmit(e) {
             hideLoadMoreBtn()
         }
 
-                
-        const lightbox = new SimpleLightbox('.gallery a')
-        // lightbox.refresh()
+        
 
     }
 
@@ -75,8 +74,8 @@ async function onFormSubmit(e) {
 async function onLoadMoreBtn() {
     const images = await galleryApi.fetchImages()
     makeMarkup(images, galleryEl)
-    slowScroll()
     lightbox.refresh()
+    slowScroll()    
     galleryApi.incrementPage()
     const pageNumbers = Math.round(images.totalHits / 40)
     
