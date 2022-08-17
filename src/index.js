@@ -13,7 +13,8 @@ const lightbox = new SimpleLightbox('.gallery a')
 const galleryApi = new GalleryApi()
 
 form.addEventListener('submit', onFormSubmit)
-loadMoreBtn.addEventListener('click', onLoadMoreBtn)
+
+
 
 async function onFormSubmit(e) {
     e.preventDefault()
@@ -22,7 +23,7 @@ async function onFormSubmit(e) {
     if (!searchQuery) {
         clearMarkup()
         Notiflix.Notify.failure('Type something')
-        hideLoadMoreBtn()
+        // hideLoadMoreBtn()
         return
     }   
 
@@ -49,18 +50,21 @@ async function onFormSubmit(e) {
         makeMarkup(images, galleryEl)
         lightbox.refresh()
 
-        showLoadMoreBtn()
+        // showLoadMoreBtn()
 
-        if (images.totalHits <= 40) {
-            hideLoadMoreBtn()
+        // if (images.totalHits <= 40) {
+        //     // hideLoadMoreBtn()
+        // }
+
+        if (images.totalHits >= 40) {
+            infinitScroll()
         }
 
-        
 
     }
 
     catch (error) {
-        hideLoadMoreBtn()
+        // hideLoadMoreBtn()
 
         if (error.toString().includes('no images')) {
             Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.')
@@ -73,31 +77,40 @@ async function onFormSubmit(e) {
 
 async function onLoadMoreBtn() {
     const images = await galleryApi.fetchImages()
-    makeMarkup(images, galleryEl)
-    lightbox.refresh()
-    slowScroll()    
     galleryApi.incrementPage()
-    const pageNumbers = Math.round(images.totalHits / 40)
+    makeMarkup(images, galleryEl)
+    lightbox.refresh()    
+    slowScroll()       
     
-    if (galleryApi.page > pageNumbers) {
-        hideLoadMoreBtn()
+    const pageNumbers = Math.ceil(images.totalHits / 40)
+
+    if (galleryApi.page <= pageNumbers) {
+        console.log(pageNumbers)
+        infinitScroll()
+    } else {
         Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.")
-
     }
+    
+    // if (galleryApi.page > pageNumbers) {
+    //     // hideLoadMoreBtn()
+       
+    // }
 }
-
 
 function clearMarkup() {
     galleryEl.innerHTML = ""
 }
 
-function hideLoadMoreBtn() {
-    loadMoreBtn.classList.add('is-hidden')
-}
+// function hideLoadMoreBtn() {
+//     loadMoreBtn.classList.add('is-hidden')
+//     loadMoreBtn.removeEventListener('click', onLoadMoreBtn)
 
-function showLoadMoreBtn() {
-    loadMoreBtn.classList.remove('is-hidden')
-}
+// }
+
+// function showLoadMoreBtn() {
+//     loadMoreBtn.classList.remove('is-hidden')
+//     loadMoreBtn.addEventListener('click', onLoadMoreBtn)
+// }
 
 function slowScroll() {
     const { height: cardHeight } = document
@@ -110,17 +123,18 @@ function slowScroll() {
     });
 }
 
+function infinitScroll() {
 
-// Нескінченний скрол
+    const target = galleryEl.lastChild
+    const observer = new IntersectionObserver(entries => {    
+        if (entries[0].intersectionRatio <= 0) return;
 
-// const options = {
-//     // root: null,
-//     root: document.querySelector('.gallery'),
-//     rootMargin: '0px',
-//     threshold: 1.0
-// }
+        onLoadMoreBtn();
+        observer.unobserve(target)
+    });
 
-// const observer = new IntersectionObserver(showLoadMoreBtn, options)
+    observer.observe(target)
+}
 
-// const target = document.querySelector('.gallery');
-// observer.observe(target);
+
+
