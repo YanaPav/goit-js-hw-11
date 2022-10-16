@@ -6,17 +6,23 @@ export default function makeMarkup(galleryInfo, galleryContainer) {
             <div class="photo-card">
                 <img src=${image.webformatURL} alt=${image.tags} loading="lazy" />
                 <div class="info">
+                    <li class="info-item">
+                        <svg class="icon" width="15" height="15">
+                            <use href="./images/symbol-defs.svg#like"></use>
+                        </svg>
+                        <p>${image.likes}</p>
+                    </li>
                     <p class="info-item">
-                    <b>Likes:</b>${image.likes}
+                        <b>Comments:</b>
+                        ${image.comments}
                     </p>
                     <p class="info-item">
-                    <b>Comments:</b>${image.comments}
+                        <b>Views:</b>
+                        ${image.views}
                     </p>
                     <p class="info-item">
-                    <b>Views:</b>${image.views}
-                    </p>                    
-                    <p class="info-item">
-                    <b>Downloads:</b>${image.downloads}
+                        <b>Downloads:</b>
+                        ${image.downloads}
                     </p>
                 </div>
             </div>
