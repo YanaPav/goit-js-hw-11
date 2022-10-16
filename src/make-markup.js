@@ -7,9 +7,7 @@ export default function makeMarkup(galleryInfo, galleryContainer) {
                 <img src=${image.webformatURL} alt=${image.tags} loading="lazy" />
                 <div class="info">
                     <li class="info-item">
-                        <svg class="icon" width="15" height="15">
-                            <use href="./images/symbol-defs.svg#like"></use>
-                        </svg>
+                        <b>Likes:</b>
                         <p>${image.likes}</p>
                     </li>
                     <p class="info-item">
